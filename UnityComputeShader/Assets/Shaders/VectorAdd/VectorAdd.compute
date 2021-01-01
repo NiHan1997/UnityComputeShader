@@ -1,0 +1,24 @@
+#pragma kernel CSMain
+
+// 线程组的数量.
+#define thread_group_x 2
+#define thread_group_y 2
+
+// 线程的数量.
+#define thread_x 2
+#define thread_y 2
+
+// 缓冲区定义.
+RWStructuredBuffer<float3> Result;
+RWStructuredBuffer<float3> PrevVertices;
+RWStructuredBuffer<float3> NextVertices;
+
+// 计算着色器的核心.
+[numthreads(2, 2, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    int index = id.x + id.y * thread_x * thread_group_x + 
+        id.z * thread_group_x * thread_group_y * thread_x * thread_y;
+    
+    Result[index] = PrevVertices[index] + NextVertices[index];
+}
