@@ -12,3 +12,9 @@
 ![image](/Images/EdgeDetection/Origin.png)
 ![image](/Images/EdgeDetection/Edge01.png)
 ![image](/Images/EdgeDetection/Edge02.png)
+
+# 三：绘制简单的几何体
+计算着色器为我们提供的功能远不止图像处理那么简单，事实上，计算着色器的功能可以高效地替代几何着色器和曲面细分着色器，只是在处理的过程中会比较麻烦，但是得到的性能提示绝对是值得的。
+在这里使用计算着色器简单绘制了 100 颗草的网格，这是为后面无尽草地渲染做准备，也是计算着色器操作顶点的入门示例。
+![image](/Images/GrassPrepare/Grass01.png)
+![image](/Images/GrassPrepare/Grass02.png)
