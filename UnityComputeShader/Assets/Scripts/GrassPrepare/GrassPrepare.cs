@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ÎŞ¾¡²İµØäÖÈ¾Ç°ÖÃ×¼±¸, »æÖÆÒ»Æ¬¼òµ¥µÄ²İµØ.
+/// æ— å°½è‰åœ°æ¸²æŸ“å‰ç½®å‡†å¤‡, ç»˜åˆ¶ä¸€ç‰‡ç®€å•çš„è‰åœ°.
 /// </summary>
 public class GrassPrepare : MonoBehaviour
 {
@@ -14,7 +14,7 @@ public class GrassPrepare : MonoBehaviour
     private Material m_Material;
 
     /// <summary>
-    /// Ò»¿Ã²İµÄ Mesh, 7 ¸ö¶¥µã, 15 ¸öË÷Òı.
+    /// ä¸€æ£µè‰çš„ Mesh, 7 ä¸ªé¡¶ç‚¹, 15 ä¸ªç´¢å¼•.
     /// </summary>
     private Mesh bladeMesh;
     private ComputeBuffer positionBuffer;

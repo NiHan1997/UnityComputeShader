@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Rendering;
 
 /// <summary>
-/// ÎŞ¾¡²İµØÊµÊ±äÖÈ¾ÔÚ¼ÆËã×ÅÉ«Æ÷ÊµÏÖ.
+/// æ— å°½è‰åœ°å®æ—¶æ¸²æŸ“åœ¨è®¡ç®—ç€è‰²å™¨å®ç°.
 /// </summary>
 public class Grass : MonoBehaviour
 {
@@ -41,7 +41,7 @@ public class Grass : MonoBehaviour
 
     private void Start()
     {
-        // »ñÈ¡»ù´¡ĞÅÏ¢.
+        // è·å–åŸºç¡€ä¿¡æ¯.
         Vector3[] positions = sourceMesh.vertices;
         int[] tris = sourceMesh.triangles;
 
@@ -55,7 +55,7 @@ public class Grass : MonoBehaviour
         }
         int numSourceTriangles = tris.Length / 3;
 
-        // ³õÊ¼»¯ Buffer.
+        // åˆå§‹åŒ– Buffer.
         sourceVertexBuffer = new ComputeBuffer(vertices.Length, SOURCE_VERT_STRIDE, ComputeBufferType.Structured, ComputeBufferMode.Immutable);
         sourceVertexBuffer.SetData(vertices);
         
@@ -67,7 +67,7 @@ public class Grass : MonoBehaviour
 
         argsBuffer = new ComputeBuffer(1, INDIRECT_ARGS_STRIDE, ComputeBufferType.IndirectArguments);
 
-        // ÉèÖÃÊı¾İ.
+        // è®¾ç½®æ•°æ®.
         kernelIndex = grassComputeShader.FindKernel("CSMain");
 
         grassComputeShader.SetBuffer(kernelIndex, "SourceVertexBuffer", sourceVertexBuffer);
@@ -78,7 +78,7 @@ public class Grass : MonoBehaviour
 
         grassMaterial.SetBuffer("DrawTriangles", drawTriangleBuffer);
 
-        // ¼ÆËãÏß³Ì·ÖÅä.
+        // è®¡ç®—çº¿ç¨‹åˆ†é….
         grassComputeShader.GetKernelThreadGroupSizes(kernelIndex, out uint threadGroupSize, out _, out _);
         dispatchSize = Mathf.CeilToInt((float)numSourceTriangles / threadGroupSize);
 

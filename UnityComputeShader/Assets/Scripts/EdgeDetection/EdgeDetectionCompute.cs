@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// ¼ÆËã×ÅÉ«Æ÷ÊµÏÖ±ßÔµ¼ì²âĞ§¹û.
+/// è®¡ç®—ç€è‰²å™¨å®ç°è¾¹ç¼˜æ£€æµ‹æ•ˆæœ.
 /// </summary>
 public class EdgeDetectionCompute : MonoBehaviour
 {
     /// <summary>
-    /// ¼ÆËã×ÅÉ«Æ÷½á¹ûÓ¦ÓÃµÄ²ÄÖÊ.
+    /// è®¡ç®—ç€è‰²å™¨ç»“æœåº”ç”¨çš„æè´¨.
     /// </summary>
     private Material m_Material;
 
@@ -16,24 +16,24 @@ public class EdgeDetectionCompute : MonoBehaviour
     private ComputeShader m_ComputeShader;
 
     /// <summary>
-    /// ¼ÆËã×ÅÉ«Æ÷ÊäÈë.
+    /// è®¡ç®—ç€è‰²å™¨è¾“å…¥.
     /// </summary>
     [SerializeField]
     private Texture2D inputTexture;
 
     /// <summary>
-    /// ¼ÆËã×ÅÉ«Æ÷Êä³ö.
+    /// è®¡ç®—ç€è‰²å™¨è¾“å‡º.
     /// </summary>
     private RenderTexture outputTexture;
 
     /// <summary>
-    /// ±ßÔµÑÕÉ«Ç¿¶È.
+    /// è¾¹ç¼˜é¢œè‰²å¼ºåº¦.
     /// </summary>
     [SerializeField, Range(0, 1)]
     private float onlyEdgeColor = 0.5f;
 
     /// <summary>
-    /// ±ßÔµÑÕÉ«Éî¶È¿ØÖÆ.
+    /// è¾¹ç¼˜é¢œè‰²æ·±åº¦æ§åˆ¶.
     /// </summary>
     [SerializeField, Range(0, 1)]
     private float edgeColorMinus = 0.5f;

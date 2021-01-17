@@ -3,47 +3,47 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Ê¹ÓÃ¼ÆËã×ÅÉ«Æ÷¼ÆËãÏòÁ¿Ïà¼ÓµÄÊ¾Àı.
+/// ä½¿ç”¨è®¡ç®—ç€è‰²å™¨è®¡ç®—å‘é‡ç›¸åŠ çš„ç¤ºä¾‹.
 /// </summary>
 public class VectorAdd : MonoBehaviour
 {
     /// <summary>
-    /// ¼ÆËã×ÅÉ«Æ÷.
+    /// è®¡ç®—ç€è‰²å™¨.
     /// </summary>
     [SerializeField]
     private ComputeShader m_ComputeShader;
 
-    // ·Ö±ğ´æ´¢½á¹û¡¢¼ÓÊıºÍ±»¼ÓÊı.
+    // åˆ†åˆ«å­˜å‚¨ç»“æœã€åŠ æ•°å’Œè¢«åŠ æ•°.
     private ComputeBuffer resultBuffer;
     private ComputeBuffer prevBuffer;
     private ComputeBuffer nextBuffer;
 
     /// <summary>
-    /// Ïà¼ÓµÄÊıÁ¿.
+    /// ç›¸åŠ çš„æ•°é‡.
     /// </summary>
     [SerializeField]
     private int arraySize = 16;
 
     /// <summary>
-    /// ¼ÓÊı¼¯ºÏ.
+    /// åŠ æ•°é›†åˆ.
     /// </summary>
     [SerializeField]
     private List<Vector3> prevList;
 
     /// <summary>
-    /// ±»¼ÓÊı¼¯ºÏ.
+    /// è¢«åŠ æ•°é›†åˆ.
     /// </summary>
     [SerializeField]
     private List<Vector3> nextList;
 
     /// <summary>
-    /// ½á¹û¼¯ºÏ.
+    /// ç»“æœé›†åˆ.
     /// </summary>
     [SerializeField]
     private List<Vector3> resultList;
 
     /// <summary>
-    /// ÓÃÓÚ´æ´¢¼ÆËã×ÅÉ«Æ÷µÄ¾ä±ú.
+    /// ç”¨äºå­˜å‚¨è®¡ç®—ç€è‰²å™¨çš„å¥æŸ„.
     /// </summary>
     private int kernelIndex;
 
@@ -79,7 +79,7 @@ public class VectorAdd : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼¯ºÏÏà¹ØÊı¾İ³õÊ¼»¯.
+    /// é›†åˆç›¸å…³æ•°æ®åˆå§‹åŒ–.
     /// </summary>
     private void InitList()
     {
@@ -95,7 +95,7 @@ public class VectorAdd : MonoBehaviour
     }
 
     /// <summary>
-    /// ¼ÆËã×ÅÉ«Æ÷ĞèÒªµÄ»º³åÇø³õÊ¼»¯.
+    /// è®¡ç®—ç€è‰²å™¨éœ€è¦çš„ç¼“å†²åŒºåˆå§‹åŒ–.
     /// </summary>
     private void InitBuffers()
     {
@@ -109,7 +109,7 @@ public class VectorAdd : MonoBehaviour
     }
 
     /// <summary>
-    /// ½«¼ÆËã×ÅÉ«Æ÷ĞèÒªµÄÊı¾İ·¢ËÍ.
+    /// å°†è®¡ç®—ç€è‰²å™¨éœ€è¦çš„æ•°æ®å‘é€.
     /// </summary>
     private void InitBufferData()
     {
