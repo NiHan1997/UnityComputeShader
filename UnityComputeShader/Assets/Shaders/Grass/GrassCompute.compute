@@ -41,6 +41,12 @@ RWStructuredBuffer<IndirectArgs> IndirectArgsBuffer;
 int _numSourceTriangles;        // 原始 Mesh 的三角形数量.
 float4x4 _objectToWorld;        // 模型空间 --> 世界空间.
 
+// 草地相关设置.
+float _BladeWidth;
+float _BladeWidthRandom;
+float _BladeHeight;
+float _BladeHeightRandom;
+
 // 获取世界坐标、世界法线和切线到世界空间的变换矩阵.
 void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c, 
     out float3 positionWS, out float3 normalWS, out float3x3 tangentToWorld)
@@ -54,10 +60,11 @@ void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c,
 }
 
 // 顶点偏移.
-DrawVertex SetupBladePoint(float3 anchorWS, float3x3 tangentToWorld, float2 uv)
+DrawVertex SetupBladePoint(float3 anchorWS, float3x3 transformation, float2 uv,
+    float width, float height)
 {
-    float3 offsetTS = float3(uv.x - 0.5f, 0, uv.y); 
-    float3 offsetWS = mul(tangentToWorld, offsetTS);
+    float3 offsetTS = float3((uv.x - 0.5f) * width, 0, uv.y * height); 
+    float3 offsetWS = mul(transformation, offsetTS);
     float3 positionWS = anchorWS + offsetWS;
 
     DrawVertex output;
@@ -82,9 +89,18 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         positionWS, normalWS, tangentToWorld);
 
     DrawVertex vertices[3];
-    vertices[0] = SetupBladePoint(positionWS, tangentToWorld, float2(0, 0));
-    vertices[1] = SetupBladePoint(positionWS, tangentToWorld, float2(1, 0));
-    vertices[2] = SetupBladePoint(positionWS, tangentToWorld, float2(0.5, 1));
+
+    // 草地随机旋转效果.
+    float3 center = positionWS;
+    float3x3 faceRotation = AngleAxis3x3(rand(center.xyz) * UNITY_TWO_PI, float3(0, 0, 1));
+    float3x3 transformation = mul(tangentToWorld, faceRotation);            // 这里注意矩阵乘法的顺序.
+
+	float height = (rand(center.zyx) * 2 - 1) * _BladeHeightRandom + _BladeHeight;
+	float width = (rand(center.xzy) * 2 - 1) * _BladeWidthRandom + _BladeWidth;
+
+    vertices[0] = SetupBladePoint(positionWS, transformation, float2(0, 0), width, height);
+    vertices[1] = SetupBladePoint(positionWS, transformation, float2(1, 0), width, height);
+    vertices[2] = SetupBladePoint(positionWS, transformation, float2(0.5, 1), width, height);
 
     DrawTriangle tri;
     tri.normalWS = normalWS;

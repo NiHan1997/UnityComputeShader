@@ -17,6 +17,9 @@ public class Grass : MonoBehaviour
     [SerializeField]
     private Mesh sourceMesh;
 
+    [SerializeField]
+    private GrassSettings grassSettings;
+
     private ComputeBuffer sourceVertexBuffer;
     private ComputeBuffer sourceTriangleBuffer;
     private ComputeBuffer drawTriangleBuffer;
@@ -42,6 +45,9 @@ public class Grass : MonoBehaviour
     private void Start()
     {
         // 获取基础信息.
+        sourceMesh = gameObject.GetComponent<CreatePlaneMesh>().CreatePlane();
+        sourceMesh.name = "Plane Sub";
+
         Vector3[] positions = sourceMesh.vertices;
         int[] tris = sourceMesh.triangles;
 
@@ -70,11 +76,20 @@ public class Grass : MonoBehaviour
         // 设置数据.
         kernelIndex = grassComputeShader.FindKernel("CSMain");
 
+        // 设置 Buffer.
         grassComputeShader.SetBuffer(kernelIndex, "SourceVertexBuffer", sourceVertexBuffer);
         grassComputeShader.SetBuffer(kernelIndex, "SourceTriangleBuffer", sourceTriangleBuffer);
         grassComputeShader.SetBuffer(kernelIndex, "DrawTriangles", drawTriangleBuffer);
         grassComputeShader.SetBuffer(kernelIndex, "IndirectArgsBuffer", argsBuffer);
+
+        // 设置数量.
         grassComputeShader.SetInt("_numSourceTriangles", numSourceTriangles);
+
+        // 设置草地数据.
+        grassComputeShader.SetFloat("_BladeWidth", grassSettings.bladeWidth);
+        grassComputeShader.SetFloat("_BladeWidthRandom", grassSettings.bladeWidthRandom);
+        grassComputeShader.SetFloat("_BladeHeight", grassSettings.bladeHeight);
+        grassComputeShader.SetFloat("_BladeHeightRandom", grassSettings.bladeHeightRandom);
 
         grassMaterial.SetBuffer("DrawTriangles", drawTriangleBuffer);
 
