@@ -47,6 +47,8 @@ float _BladeWidthRandom;
 float _BladeHeight;
 float _BladeHeightRandom;
 
+#define BLADE_SEGMENTS 3        // 草叶片分段数量, 这里分为 3 段, 含有 7 个顶点.
+
 // 获取世界坐标、世界法线和切线到世界空间的变换矩阵.
 void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c, 
     out float3 positionWS, out float3 normalWS, out float3x3 tangentToWorld)
@@ -63,7 +65,7 @@ void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c,
 DrawVertex SetupBladePoint(float3 anchorWS, float3x3 transformation, float2 uv,
     float width, float height)
 {
-    float3 offsetTS = float3((uv.x - 0.5f) * width, 0, uv.y * height); 
+    float3 offsetTS = float3(uv.x * width, 0, uv.y * height);
     float3 offsetWS = mul(transformation, offsetTS);
     float3 positionWS = anchorWS + offsetWS;
 
@@ -88,26 +90,39 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         SourceVertexBuffer[SourceTriangleBuffer[triStart + 2]],
         positionWS, normalWS, tangentToWorld);
 
-    DrawVertex vertices[3];
-
     // 草地随机旋转效果.
-    float3 center = positionWS;
-    float3x3 faceRotation = AngleAxis3x3(rand(center.xyz) * UNITY_TWO_PI, float3(0, 0, 1));
+    float3x3 faceRotation = AngleAxis3x3(rand(positionWS.xyz) * UNITY_TWO_PI, float3(0, 0, 1));
     float3x3 transformation = mul(tangentToWorld, faceRotation);            // 这里注意矩阵乘法的顺序.
 
-	float height = (rand(center.zyx) * 2 - 1) * _BladeHeightRandom + _BladeHeight;
-	float width = (rand(center.xzy) * 2 - 1) * _BladeWidthRandom + _BladeWidth;
+    float height = (rand(positionWS.zyx) * 2 - 1) * _BladeHeightRandom + _BladeHeight;
+    float width = (rand(positionWS.xzy) * 2 - 1) * _BladeWidthRandom + _BladeWidth;
 
-    vertices[0] = SetupBladePoint(positionWS, transformation, float2(0, 0), width, height);
-    vertices[1] = SetupBladePoint(positionWS, transformation, float2(1, 0), width, height);
-    vertices[2] = SetupBladePoint(positionWS, transformation, float2(0.5, 1), width, height);
+    // 顶点数据.
+    int numBladeSegments = 3;
+    DrawVertex vertices[2 * BLADE_SEGMENTS + 1];
+    [unroll]
+    for (int i = 0; i < numBladeSegments; ++i)
+    {        
+        float t = i / (float)numBladeSegments;
 
-    DrawTriangle tri;
-    tri.normalWS = normalWS;
-    tri.vertices[0] = vertices[0];
-    tri.vertices[1] = vertices[1];
-    tri.vertices[2] = vertices[2];
-    DrawTriangles.Append(tri);
+        vertices[2 * i] = SetupBladePoint(positionWS, transformation, float2(-0.5, t), width, height);
+        vertices[2 * i + 1] = SetupBladePoint(positionWS, transformation, float2(0.5, t), width, height);
+    }
+    vertices[numBladeSegments * 2] = SetupBladePoint(positionWS, transformation, float2(0.0, 1.0), width, height);
 
-    InterlockedAdd(IndirectArgsBuffer[0].numVerticesPerInstance, 3);
+    // 三角形数据.
+    int numTriangles = 2 * numBladeSegments - 1;
+    [unroll]
+    for (int it = 0; it < numTriangles; ++it)
+    {
+        DrawTriangle tri;
+        tri.normalWS = normalWS;
+        tri.vertices[0] = vertices[it];
+        tri.vertices[1] = vertices[it + 1];
+        tri.vertices[2] = vertices[it + 2];
+
+        DrawTriangles.Append(tri);
+    }
+
+    InterlockedAdd(IndirectArgsBuffer[0].numVerticesPerInstance, 3 * numTriangles);
 }

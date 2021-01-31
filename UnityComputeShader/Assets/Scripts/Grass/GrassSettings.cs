@@ -18,4 +18,7 @@ public class GrassSettings
 
     [Tooltip("草地叶片高度的随机范围.")]
     public float bladeHeightRandom = 0.1f;
+    
+    [Tooltip("草地叶片最大分段数量.")]
+    public int maxBladeSegments = 3;
 }

@@ -2,19 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// 创建平面 Mesh 的工具.
+/// </summary>
 public class CreatePlaneMesh : MonoBehaviour
 {
-    [SerializeField]
-    private float width;             // 平面宽度.
+    [SerializeField, Tooltip("平面宽度.")]
+    private float width;
 
-    [SerializeField]
-    private float depth;             // 平面深度.
+    [SerializeField, Tooltip("平面深度.")]
+    private float depth;
 
-    [SerializeField]
-    private int subX;                // X 轴细分次数. 
+    [SerializeField, Tooltip("X 轴细分次数.")]
+    private int subX;
 
-    [SerializeField]
-    private int subZ;                // Z 轴方向细分次数.
+    [SerializeField, Tooltip("Z 轴方向细分次数.")]
+    private int subZ;
 
     /// <summary>
     /// 创建Mesh数据.
