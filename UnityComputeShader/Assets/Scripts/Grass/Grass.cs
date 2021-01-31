@@ -90,6 +90,12 @@ public class Grass : MonoBehaviour
         grassComputeShader.SetFloat("_BladeWidthRandom", grassSettings.bladeWidthRandom);
         grassComputeShader.SetFloat("_BladeHeight", grassSettings.bladeHeight);
         grassComputeShader.SetFloat("_BladeHeightRandom", grassSettings.bladeHeightRandom);
+        grassComputeShader.SetFloat("_BendRotationRandom", grassSettings.bendRotationRandom);
+        grassComputeShader.SetFloat("_BladeForward", grassSettings.bladeForward);
+        grassComputeShader.SetTexture(kernelIndex, "_WindTexture", grassSettings.windTexture);
+        grassComputeShader.SetVector("_WindTextureST", grassSettings.windTextureST);
+        grassComputeShader.SetFloat("_WindStrength", grassSettings.windStrength);
+        grassComputeShader.SetVector("_WindFrequency", grassSettings.windFrequency);
 
         grassMaterial.SetBuffer("DrawTriangles", drawTriangleBuffer);
 
@@ -130,7 +136,7 @@ public class Grass : MonoBehaviour
             argsBuffer.Release();
     }
 
-    public Bounds TransformBounds(Bounds boundsOS)
+    private Bounds TransformBounds(Bounds boundsOS)
     {
         Vector3 center = transform.TransformPoint(boundsOS.center);
 

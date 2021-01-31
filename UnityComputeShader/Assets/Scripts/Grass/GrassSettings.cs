@@ -21,4 +21,22 @@ public class GrassSettings
     
     [Tooltip("草地叶片最大分段数量.")]
     public int maxBladeSegments = 3;
+
+    [Tooltip("草的弯曲程度.")]
+    public float bendRotationRandom;
+
+    [Tooltip("草地的朝向, 越小草越直.")]
+    public float bladeForward;
+
+    [Tooltip("风向的随机噪声纹理.")]
+    public Texture2D windTexture;
+
+    [Tooltip("风向的随机噪声纹理采样参数.")]
+    public Vector4 windTextureST;
+
+    [Tooltip("调整风力.")]
+    public float windStrength;
+
+    [Tooltip("调整风速.")]
+    public Vector2 windFrequency;
 }

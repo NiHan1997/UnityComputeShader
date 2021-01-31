@@ -173,8 +173,15 @@ MonoBehaviour:
   grassSettings:
     bladeWidth: 0.05
     bladeWidthRandom: 0.02
-    bladeHeight: 0.5
-    bladeHeightRandom: 0.1
+    bladeHeight: 0.3
+    bladeHeightRandom: 0.05
+    maxBladeSegments: 3
+    bendRotationRandom: 0.2
+    bladeForward: 0.05
+    windTexture: {fileID: 2800000, guid: c9963881ea68ba24ab937b7933bef51d, type: 3}
+    windTextureST: {x: 0.01, y: 0.01, z: 0, w: 0}
+    windStrength: 2
+    windFrequency: {x: 0.01, y: 0.01}
 --- !u!114 &491342510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -189,8 +196,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   width: 10
   depth: 10
-  subX: 100
-  subZ: 100
+  subX: 200
+  subZ: 200
 --- !u!1 &1078637971
 GameObject:
   m_ObjectHideFlags: 0
