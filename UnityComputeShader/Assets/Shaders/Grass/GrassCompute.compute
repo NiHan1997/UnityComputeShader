@@ -1,4 +1,4 @@
-﻿#pragma kernel CSMain
+#pragma kernel CSMain
 
 #include "UnityCG.cginc"
 #include "GrassHelpers.cginc"
@@ -33,13 +33,13 @@ struct IndirectArgs
 };
 
 // 缓冲区.
-RWStructuredBuffer<SourceVertex> SourceVertexBuffer;
-RWStructuredBuffer<int> SourceTriangleBuffer;
-AppendStructuredBuffer<DrawTriangle> DrawTriangles;
-RWStructuredBuffer<IndirectArgs> IndirectArgsBuffer;
+RWStructuredBuffer<SourceVertex> _SourceVertexBuffer;
+RWStructuredBuffer<int> _SourceTriangleBuffer;
+AppendStructuredBuffer<DrawTriangle> _DrawTriangles;
+RWStructuredBuffer<IndirectArgs> _IndirectArgsBuffer;
 
-int _numSourceTriangles;        // 原始 Mesh 的三角形数量.
-float4x4 _objectToWorld;        // 模型空间 --> 世界空间.
+int _NumSourceTriangles;        // 原始 Mesh 的三角形数量.
+float4x4 _ObjectToWorld;        // 模型空间 --> 世界空间.
 
 // 草地相关设置.
 float _BladeWidth;
@@ -59,9 +59,9 @@ float2 _WindFrequency;
 void GetCenterAndBasis(SourceVertex a, SourceVertex b, SourceVertex c, 
     out float3 positionWS, out float3 normalWS, out float3x3 tangentToWorld)
 {
-    float3 positionA_WS = mul(_objectToWorld, float4(a.positionOS, 1)).xyz;
-    float3 positionB_WS = mul(_objectToWorld, float4(b.positionOS, 1)).xyz;
-    float3 positionC_WS = mul(_objectToWorld, float4(c.positionOS, 1)).xyz;
+    float3 positionA_WS = mul(_ObjectToWorld, float4(a.positionOS, 1)).xyz;
+    float3 positionB_WS = mul(_ObjectToWorld, float4(b.positionOS, 1)).xyz;
+    float3 positionC_WS = mul(_ObjectToWorld, float4(c.positionOS, 1)).xyz;
 
     positionWS = GetTriangleCenter(positionA_WS, positionB_WS, positionC_WS);
     GetTriangleNormalAndTangentToWorldMatrix(positionA_WS, positionB_WS, positionC_WS, normalWS, tangentToWorld);
@@ -85,15 +85,15 @@ DrawVertex SetupBladePoint(float3 anchorWS, float3x3 transformation, float2 uv,
 [numthreads(128, 1, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
-    if ((int)id.x >= _numSourceTriangles) return;
+    if ((int)id.x >= _NumSourceTriangles) return;
 
     int triStart = id.x * 3;
     float3 positionWS, normalWS;
     float3x3 tangentToWorld;
     GetCenterAndBasis(
-        SourceVertexBuffer[SourceTriangleBuffer[triStart]],
-        SourceVertexBuffer[SourceTriangleBuffer[triStart + 1]],
-        SourceVertexBuffer[SourceTriangleBuffer[triStart + 2]],
+        _SourceVertexBuffer[_SourceTriangleBuffer[triStart]],
+        _SourceVertexBuffer[_SourceTriangleBuffer[triStart + 1]],
+        _SourceVertexBuffer[_SourceTriangleBuffer[triStart + 2]],
         positionWS, normalWS, tangentToWorld);
 
     // 草地随机旋转效果.
@@ -145,8 +145,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
         tri.vertices[1] = vertices[it + 1];
         tri.vertices[2] = vertices[it + 2];
 
-        DrawTriangles.Append(tri);
+        _DrawTriangles.Append(tri);
     }
 
-    InterlockedAdd(IndirectArgsBuffer[0].numVerticesPerInstance, 3 * numTriangles);
+    InterlockedAdd(_IndirectArgsBuffer[0].numVerticesPerInstance, 3 * numTriangles);
 }

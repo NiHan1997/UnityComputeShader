@@ -18,24 +18,35 @@ public class Grass : MonoBehaviour
     private Mesh sourceMesh;
 
     [SerializeField]
-    private GrassSettings grassSettings;
+    private GrassSettings grassSettings;                    // 草地相关设置项.
 
-    private ComputeBuffer sourceVertexBuffer;
-    private ComputeBuffer sourceTriangleBuffer;
-    private ComputeBuffer drawTriangleBuffer;
-    private ComputeBuffer argsBuffer;
+    private ComputeBuffer sourceVertexBuffer;               // 顶点输入源.
+    private ComputeBuffer sourceTriangleBuffer;             // 三角形输入源, 在这里只需要索引第几个三角形即可.
+    private ComputeBuffer drawTriangleBuffer;               // 最终需要绘制的三角形.
+    private ComputeBuffer argsBuffer;                       // 计算着色器需要的内部参数.
 
-    private int kernelIndex;
-    private int dispatchSize;
-    private Bounds localBounds;
+    private int kernelIndex;                                // 计算着色器索引.
+    private int dispatchSize;                               // 分配的线程组数量.
+    private Bounds localBounds;                             // 包围盒.
 
-    private const int SOURCE_VERT_STRIDE = sizeof(float) * 3;
-    private const int SOURCE_TRI_STRIDE = sizeof(int);
-    private const int DRAW_STRIDE = sizeof(float) * (3 + (3 + 1) * 3);
-    private const int INDIRECT_ARGS_STRIDE = sizeof(int) * 4;
-
+    private const int SOURCE_VERT_STRIDE = sizeof(float) * 3;               // 每个输入顶点的大小.
+    private const int SOURCE_TRI_STRIDE = sizeof(int);                      // 每个输入三角形的大小.
+    private const int DRAW_STRIDE = sizeof(float) * (3 + (3 + 1) * 3);      // 绘制每个三角形需要的大小数据.
+    private const int INDIRECT_ARGS_STRIDE = sizeof(int) * 4;               // 计算着色器内部参数数据大小.
+    
+    /// <summary>
+    /// 每一帧都需要重置这个数据, 数据的计算的由计算着色器内部控制的, 我们只考虑其中的初始状态即可.
+    /// 0: 每一个实例需要的顶点数量, 在这里我们只需要 1 个实例;
+    /// 1: 实例数量;
+    /// 2: 开始绘制的顶点索引偏移;
+    /// 3: 开始绘制的实例索引偏移.
+    /// </summary>
     private int[] argsBufferReset = new int[] { 0, 1, 0, 0 };
 
+    /// <summary>
+    /// 这个结构体的数据会发送到 GPU 计算着色器, 加上这个标签的布局类型可确保数据按顺序进行布局.
+    /// 也就是说, 加上这个标签后我们可以不用考虑 Vector4 的对齐问题.
+    /// </summary>
     [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential)]
     private struct SourceVertex
     {
@@ -44,7 +55,7 @@ public class Grass : MonoBehaviour
 
     private void Start()
     {
-        // 获取基础信息.
+        // 创建一个较大的 Mesh, 用于存放更多的草地.
         sourceMesh = gameObject.GetComponent<CreatePlaneMesh>().CreatePlane();
         sourceMesh.name = "Plane Sub";
 
@@ -77,13 +88,13 @@ public class Grass : MonoBehaviour
         kernelIndex = grassComputeShader.FindKernel("CSMain");
 
         // 设置 Buffer.
-        grassComputeShader.SetBuffer(kernelIndex, "SourceVertexBuffer", sourceVertexBuffer);
-        grassComputeShader.SetBuffer(kernelIndex, "SourceTriangleBuffer", sourceTriangleBuffer);
-        grassComputeShader.SetBuffer(kernelIndex, "DrawTriangles", drawTriangleBuffer);
-        grassComputeShader.SetBuffer(kernelIndex, "IndirectArgsBuffer", argsBuffer);
+        grassComputeShader.SetBuffer(kernelIndex, "_SourceVertexBuffer", sourceVertexBuffer);
+        grassComputeShader.SetBuffer(kernelIndex, "_SourceTriangleBuffer", sourceTriangleBuffer);
+        grassComputeShader.SetBuffer(kernelIndex, "_DrawTriangles", drawTriangleBuffer);
+        grassComputeShader.SetBuffer(kernelIndex, "_IndirectArgsBuffer", argsBuffer);
 
         // 设置数量.
-        grassComputeShader.SetInt("_numSourceTriangles", numSourceTriangles);
+        grassComputeShader.SetInt("_NumSourceTriangles", numSourceTriangles);
 
         // 设置草地数据.
         grassComputeShader.SetFloat("_BladeWidth", grassSettings.bladeWidth);
@@ -97,7 +108,7 @@ public class Grass : MonoBehaviour
         grassComputeShader.SetFloat("_WindStrength", grassSettings.windStrength);
         grassComputeShader.SetVector("_WindFrequency", grassSettings.windFrequency);
 
-        grassMaterial.SetBuffer("DrawTriangles", drawTriangleBuffer);
+        grassMaterial.SetBuffer("_DrawTriangles", drawTriangleBuffer);
 
         // 计算线程分配.
         grassComputeShader.GetKernelThreadGroupSizes(kernelIndex, out uint threadGroupSize, out _, out _);
@@ -113,7 +124,7 @@ public class Grass : MonoBehaviour
         argsBuffer.SetData(argsBufferReset);
 
         Bounds bounds = TransformBounds(localBounds);
-        grassComputeShader.SetMatrix("_objectToWorld", transform.localToWorldMatrix);
+        grassComputeShader.SetMatrix("_ObjectToWorld", transform.localToWorldMatrix);
 
         grassComputeShader.Dispatch(kernelIndex, dispatchSize, 1, 1);
 

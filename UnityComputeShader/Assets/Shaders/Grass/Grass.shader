@@ -10,6 +10,31 @@ Shader "Custom/Grass"
     {
         Cull Off
 
+        CGINCLUDE
+
+        #include "Lighting.cginc"
+        #include "UnityCG.cginc"
+        #include "AutoLight.cginc"
+
+        float4 _BaseColor;                  // 草地顶端颜色.
+        float4 _TipColor;                   // 草地底部颜色.
+
+        struct DrawVertex 
+        {
+            float3 vertex;
+            float height;
+        };            
+        
+        struct DrawTriangle 
+        {
+            float3 worldNormal;
+            DrawVertex vertices[3];
+        };
+
+        StructuredBuffer<DrawTriangle> _DrawTriangles;
+
+        ENDCG
+
         Pass
         {
             Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase" }
@@ -19,37 +44,15 @@ Shader "Custom/Grass"
             #pragma vertex vert
             #pragma fragment frag
 
-            #include "Lighting.cginc"
-            #include "UnityCG.cginc"
-            #include "AutoLight.cginc"
-
-            #pragma multi_compile_fwdbase
-
             #pragma target 5.0
-
-            float4 _BaseColor;
-            float4 _TipColor;
-
-            struct DrawVertex 
-            {
-                float3 vertex;
-                float height;
-            };            
+            #pragma multi_compile_fwdbase
             
-            struct DrawTriangle 
-            {
-                float3 lightingNormalWS;
-                DrawVertex vertices[3];
-            };
-
-            StructuredBuffer<DrawTriangle> DrawTriangles;
-
             struct v2f
             {
                 float4 pos : SV_POSITION;
                 float uv : TEXCOORD0;
-                float3 positionWS : TEXCOORD1;
-                float3 normalWS : TEXCOORD2;
+                float3 worldPos : TEXCOORD1;
+                float3 worldNormal : TEXCOORD2;
                 SHADOW_COORDS(3)
             };
 
@@ -57,11 +60,11 @@ Shader "Custom/Grass"
             {
                 v2f o;
 
-                DrawTriangle tri = DrawTriangles[vertexID / 3];
+                DrawTriangle tri = _DrawTriangles[vertexID / 3];
                 DrawVertex v = tri.vertices[vertexID % 3];
 
-                o.positionWS = v.vertex;
-                o.normalWS = tri.lightingNormalWS;
+                o.worldPos = v.vertex;
+                o.worldNormal = tri.worldNormal;
                 o.uv = v.height;
                 o.pos = UnityWorldToClipPos(v.vertex);
 
@@ -74,8 +77,8 @@ Shader "Custom/Grass"
             {
                 fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;
 
-                float3 worldPos = i.positionWS;
-                fixed3 worldNormal = normalize(i.normalWS);
+                float3 worldPos = i.worldPos;
+                fixed3 worldNormal = normalize(i.worldNormal);
                 fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(worldPos));
 
                 fixed shadow = SHADOW_ATTENUATION(i);
@@ -96,39 +99,23 @@ Shader "Custom/Grass"
 			#pragma vertex vert
 			#pragma fragment frag
 
-            #include "UnityCG.cginc"
-
 			#pragma target 5.0
 			#pragma multi_compile_shadowcaster
 
-			struct DrawVertex 
-            {
-                float3 positionWS;
-                float height;
-            };            
-            
-            struct DrawTriangle 
-            {
-                float3 lightingNormalWS;
-                DrawVertex vertices[3];
-            };
-
-            StructuredBuffer<DrawTriangle> DrawTriangles;
-
             struct v2f
             {
-                float4 positionCS : SV_POSITION;
+                float4 pos : SV_POSITION;
             };
 
             v2f vert(uint vertexID : SV_VERTEXID)
             {
                 v2f o;
 
-                DrawTriangle tri = DrawTriangles[vertexID / 3];
-                DrawVertex input = tri.vertices[vertexID % 3];
+                DrawTriangle tri = _DrawTriangles[vertexID / 3];
+                DrawVertex v = tri.vertices[vertexID % 3];
 
-                o.positionCS = UnityWorldToClipPos(input.positionWS);
-                o.positionCS = UnityApplyLinearShadowBias(o.positionCS);
+                o.pos = UnityWorldToClipPos(v.vertex);
+                o.pos = UnityApplyLinearShadowBias(o.pos);
 
                 return o;
             }
