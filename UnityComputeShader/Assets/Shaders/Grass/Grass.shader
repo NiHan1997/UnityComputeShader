@@ -3,7 +3,7 @@ Shader "Custom/Grass"
     Properties
     {
         _BaseColor("Base color", Color) = (0, 0.5, 0, 1)
-        _TipColor("Tip color", Color) = (0, 1, 0, 1)
+        _TopColor("Top color", Color) = (0, 1, 0, 1)
     }
 
     SubShader
@@ -16,8 +16,8 @@ Shader "Custom/Grass"
         #include "UnityCG.cginc"
         #include "AutoLight.cginc"
 
-        float4 _BaseColor;                  // 草地顶端颜色.
-        float4 _TipColor;                   // 草地底部颜色.
+        float4 _BaseColor;                  // 草地底部颜色.
+        float4 _TopColor;                   // 草地顶端颜色.
 
         struct DrawVertex 
         {
@@ -82,7 +82,7 @@ Shader "Custom/Grass"
                 fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(worldPos));
 
                 fixed shadow = SHADOW_ATTENUATION(i);
-                fixed3 diffuse = _LightColor0.rgb * lerp(_BaseColor.rgb, _TipColor.rgb, i.uv) * saturate(dot(worldNormal, worldLightDir));
+                fixed3 diffuse = _LightColor0.rgb * lerp(_BaseColor.rgb, _TopColor.rgb, i.uv) * saturate(dot(worldNormal, worldLightDir));
 
                 return fixed4(ambient + diffuse * saturate(shadow + 0.4), 1.0);
             }
