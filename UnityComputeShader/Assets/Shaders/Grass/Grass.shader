@@ -8,11 +8,11 @@ Shader "Custom/Grass"
 
     SubShader
     {
+        Cull Off
+
         Pass
         {
-            Tags { "RenderType" = "Opaque" }
-
-            Cull Off
+            Tags { "RenderType" = "Opaque" "LightMode" = "ForwardBase" }
 
             CGPROGRAM
 
@@ -21,6 +21,9 @@ Shader "Custom/Grass"
 
             #include "Lighting.cginc"
             #include "UnityCG.cginc"
+            #include "AutoLight.cginc"
+
+            #pragma multi_compile_fwdbase
 
             #pragma target 5.0
 
@@ -28,6 +31,77 @@ Shader "Custom/Grass"
             float4 _TipColor;
 
             struct DrawVertex 
+            {
+                float3 vertex;
+                float height;
+            };            
+            
+            struct DrawTriangle 
+            {
+                float3 lightingNormalWS;
+                DrawVertex vertices[3];
+            };
+
+            StructuredBuffer<DrawTriangle> DrawTriangles;
+
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+                float uv : TEXCOORD0;
+                float3 positionWS : TEXCOORD1;
+                float3 normalWS : TEXCOORD2;
+                SHADOW_COORDS(3)
+            };
+
+            v2f vert(uint vertexID : SV_VERTEXID)
+            {
+                v2f o;
+
+                DrawTriangle tri = DrawTriangles[vertexID / 3];
+                DrawVertex v = tri.vertices[vertexID % 3];
+
+                o.positionWS = v.vertex;
+                o.normalWS = tri.lightingNormalWS;
+                o.uv = v.height;
+                o.pos = UnityWorldToClipPos(v.vertex);
+
+                TRANSFER_SHADOW(o);
+
+                return o;
+            }
+
+            fixed4 frag(v2f i) : SV_TARGET
+            {
+                fixed3 ambient = UNITY_LIGHTMODEL_AMBIENT.rgb;
+
+                float3 worldPos = i.positionWS;
+                fixed3 worldNormal = normalize(i.normalWS);
+                fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(worldPos));
+
+                fixed shadow = SHADOW_ATTENUATION(i);
+                fixed3 diffuse = _LightColor0.rgb * lerp(_BaseColor.rgb, _TipColor.rgb, i.uv) * saturate(dot(worldNormal, worldLightDir));
+
+                return fixed4(ambient + diffuse * saturate(shadow + 0.4), 1.0);
+            }
+
+            ENDCG
+        }
+
+        Pass
+		{
+			Tags { "LightMode" = "ShadowCaster" }
+
+			CGPROGRAM
+
+			#pragma vertex vert
+			#pragma fragment frag
+
+            #include "UnityCG.cginc"
+
+			#pragma target 5.0
+			#pragma multi_compile_shadowcaster
+
+			struct DrawVertex 
             {
                 float3 positionWS;
                 float height;
@@ -43,9 +117,6 @@ Shader "Custom/Grass"
 
             struct v2f
             {
-                float uv : TEXCOORD0;
-                float3 positionWS : TEXCOORD1;
-                float3 normalWS : TEXCOORD2;
                 float4 positionCS : SV_POSITION;
             };
 
@@ -56,27 +127,19 @@ Shader "Custom/Grass"
                 DrawTriangle tri = DrawTriangles[vertexID / 3];
                 DrawVertex input = tri.vertices[vertexID % 3];
 
-                o.positionWS = input.positionWS;
-                o.normalWS = tri.lightingNormalWS;
-                o.uv = input.height;
                 o.positionCS = UnityWorldToClipPos(input.positionWS);
+                o.positionCS = UnityApplyLinearShadowBias(o.positionCS);
 
                 return o;
             }
 
-            fixed4 frag(v2f i) : SV_TARGET
+            float4 frag(v2f i) : SV_TARGET
             {
-                float3 worldPos = i.positionWS;
-                fixed3 worldNormal = normalize(i.normalWS);
-                fixed3 worldLightDir = normalize(UnityWorldSpaceLightDir(worldPos));
-
-                fixed3 diffuse = lerp(_BaseColor.rgb, _TipColor.rgb, i.uv) * max(0, dot(worldNormal, worldLightDir));
-
-                return fixed4(diffuse, 1.0);
+                SHADOW_CASTER_FRAGMENT(i);
             }
 
-            ENDCG
-        }
+			ENDCG
+		}
     }
 
     FallBack "Diffuse"

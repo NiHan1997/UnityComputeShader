@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 /// <summary>
 /// 草地的相关设置.
@@ -39,4 +40,10 @@ public class GrassSettings
 
     [Tooltip("调整风速.")]
     public Vector2 windFrequency;
+
+    [Tooltip("草地投射阴影.")]
+    public ShadowCastingMode shadowCastingMode = ShadowCastingMode.Off;
+
+    [Tooltip("草地接收阴影.")]
+    public bool receiveShadows = true;
 }

@@ -118,7 +118,7 @@ public class Grass : MonoBehaviour
         grassComputeShader.Dispatch(kernelIndex, dispatchSize, 1, 1);
 
         Graphics.DrawProceduralIndirect(grassMaterial, bounds, MeshTopology.Triangles, argsBuffer, 0,
-            null, null, ShadowCastingMode.Off, true, gameObject.layer);
+            null, null, grassSettings.shadowCastingMode, grassSettings.receiveShadows, gameObject.layer);
     }
 
     private void OnDestroy()
